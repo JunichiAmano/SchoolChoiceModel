@@ -41,7 +41,7 @@ J = rows(colegios) ;
 x = permute(x, [1, 3 , 2]) ;
 x = reshape(x, [n , J , length(x(1,:,:))]) ;
 
-y = reshape(x, [n , J ]) ;
+y = reshape(y, [n , J ]) ;
 
 bh = bi ;
 
