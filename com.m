@@ -27,13 +27,9 @@ simce = bas(:,7) + bas(:,8)/2 ;                                                 
 
 %bi = (x'*x)\(x'*y)                                                                   % regresion preliminar para obtener betas de inicio
 
-x = [simce] ;
+x = [simce dist] ;
 bi = (x'*x)\(x'*y) ;
 tol = 10^(-6) ;
-
-x*bi ;
-
-
 
 n = rows(postulantes) ;
 J = rows(colegios) ;
@@ -41,24 +37,24 @@ J = rows(colegios) ;
 x = permute(x, [1, 3 , 2]) ;
 x = reshape(x, [n , J , length(x(1,:,:))]) ;
 
-y = reshape(y, [n , J ]) ;
+y = reshape(y, [n , J]) ;
 
 bh = bi ;
 
-
+#{
 for h = 1:100
 
 bi = bh ;
-
-
+#}
+for l = 1:2
 
 M = zeros(n, 1) ;
     for i = 1:n
         sum1 = 0;
         sum2 = 0;
         for k = 1:J
-            sum1 = sum1 + x(i, k) * exp(bi * x(i, k));
-            sum2 = sum2 + exp(bi * x(i, k));
+            sum1 = sum1 + x(i, k, l) * exp(x(i, k,:)*bi);
+            sum2 = sum2 + exp( x(i, k, :)*bi);
         end
         M(i) = sum1 / (1 + sum2);
     end
@@ -66,10 +62,13 @@ M = zeros(n, 1) ;
     G = 0;
     for i = 1:n
         for j = 1:J
-            G = G + y(i, j) * (x(i, j) - M(i));
+            G = G + y(i, j) * (x(i, j, l) - M(i));
         end
     end
+    g(l) = G
+end
 
+#{
 
     M = zeros(n, 1);
     N = zeros(n, 1);
@@ -107,5 +106,5 @@ M = zeros(n, 1) ;
     endif
 
 end
-
+#}
 
