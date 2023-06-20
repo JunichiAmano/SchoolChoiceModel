@@ -27,21 +27,17 @@ simce = bas(:,7) + bas(:,8)/2 ;                                                 
 
 %bi = (x'*x)\(x'*y)                                                                   % regresion preliminar para obtener betas de inicio
 
-x = [simce] ;
+x = [simce dist bas(:,2)] ;
 bi = (x'*x)\(x'*y) ;
 tol = 10^(-6) ;
-
-x*bi ;
-
-
 
 n = rows(postulantes) ;
 J = rows(colegios) ;
 
 x = permute(x, [1, 3 , 2]) ;
-x = reshape(x, [n , J , length(x(1,:,:))]) ;
+x = reshape(x, [n , J , length(x(1,1,:))]) ;
 
-y = reshape(y, [n , J ]) ;
+y = reshape(y, [n , J]) ;
 
 bh = bi ;
 
@@ -51,26 +47,25 @@ for h = 1:100
 bi = bh ;
 
 
+  for l = 1:length(x(1,1,:))
 
-M = zeros(n, 1) ;
+    M = zeros(n, 1) ;
     for i = 1:n
         sum1 = 0;
         sum2 = 0;
         for k = 1:J
-            sum1 = sum1 + x(i, k) * exp(bi * x(i, k));
-            sum2 = sum2 + exp(bi * x(i, k));
+            sum1 = sum1 + x(i, k, l) * exp(x(i, k,:)*bi);
+            sum2 = sum2 + exp( x(i, k, :)*bi);
         end
-        M(i) = sum1 / (1 + sum2);
+        M(i) = sum1 / (sum2);
     end
 
-    G = 0;
-    for i = 1:n
-        for j = 1:J
-            G = G + y(i, j) * (x(i, j) - M(i));
-        end
-    end
+    G(l) = sum(sum(y.*(x(:,:,l) - repmat(M,1,length(x(1,:,l)))))) ;
 
 
+
+
+    for ll = 1:length(x(1,1,:))
     M = zeros(n, 1);
     N = zeros(n, 1);
 
@@ -79,14 +74,16 @@ M = zeros(n, 1) ;
         sum2_M = 0;
         sum1_N = 0;
         sum2_N = 0;
+        sum3_N = 0;
         for k = 1:J
-            sum1_M = sum1_M + x(i, k)^2 * exp(bi * x(i, k));
-            sum2_M = sum2_M + exp(bi * x(i, k));
-            sum1_N = sum1_N + x(i, k) * exp(bi * x(i, k));
-            sum2_N = sum2_N + exp(bi * x(i, k));
+            sum1_M = sum1_M + x(i, k,l)*x(i,k,ll) * exp(x(i, k,:)*bi );
+            sum2_M = sum2_M + exp(x(i, k,:)*bi);
+            sum1_N = sum1_N + x(i, k,l) * exp(x(i, k,:)*bi);
+            sum3_N = sum3_N + x(i, k,ll) * exp(x(i, k,:)*bi);
+            sum2_N = sum2_N + exp(x(i, k,:)*bi);
         end
-        M(i) = sum1_M / (1 + sum2_M);
-        N(i) = (sum1_N / (1 + sum2_N))^2;
+        M(i) = sum1_M / (sum2_M);
+        N(i) = sum1_N*sum3_N / (sum2_N)^2;
     end
 
     H = 0;
@@ -95,8 +92,11 @@ M = zeros(n, 1) ;
             H = H - y(i, j) * (M(i) - N(i)) ;
         end
     end
+    HH(l,ll) = H ;
+    end
+  end
 
-    bh = bi + (-H)^(-1)*G
+    bh = bi + (-HH)^(-1)*G'
 
     if abs(bh - bi) < tol
       break
