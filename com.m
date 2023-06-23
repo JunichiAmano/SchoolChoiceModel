@@ -92,3 +92,23 @@ bi = bh ;
       break
     end
 end
+
+
+Lr = 0
+for i = 1:n                                                                     % Estimacion evaluando la función de log-verosimilitud
+    for j = 1:J
+        sum2 = 0;
+        for k = 1:J
+            sum2 = sum2 + exp( permute(x(i, k, :),[1,3,2])*bh) ;
+        end
+        Lr = Lr + y(i,j)*log(exp(permute(x(i, j, :),[1,3,2])*bh)/ (sum2)) ;
+    end
+end
+
+q = 1 ;                                                                       % Grados de libertad
+t = 2*(LR + 4310.5)                                                           % log-verosimilitud calculada previamente editando los loops anteriores con x = [simce bas(:,2)]
+tpdist = 1 - chi2cdf(t,q)                                                     % p-value
+t = 2*(LR + 3456.1)                                                           % log-verosimilitud calculada previamente editando los loops anteriores con x = [dist bas(:,2)]
+tpdist = 1 - chi2cdf(t,q)                                                     % p-value
+t = 2*(LR + 3461.4)                                                           % log-verosimilitud calculada previamente editando los loops anteriores con x = [dist simce]
+tpdist = 1 - chi2cdf(t,q)                                                     % p-value
